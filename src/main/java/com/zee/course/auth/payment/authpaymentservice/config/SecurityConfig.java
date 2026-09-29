@@ -10,6 +10,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -37,6 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer(resourceServer ->
                        resourceServer.jwt(Customizer.withDefaults())
+                               .authenticationEntryPoint(new CsstomAuthenticationEntryPoint())
                 )
                 .authorizeHttpRequests(authorize ->
                     authorize.anyRequest().authenticated()
@@ -66,8 +70,15 @@ public class SecurityConfig {
 
 //                return NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
 
+
+
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
-        jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer));
+        OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(issuer);
+        AudienceValidator audienceValidator = new AudienceValidator("payment-service");
+        jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator));
         return jwtDecoder;
     }
+    //https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html#oauth2resourceserver-jwt-validation
+
+
 }
