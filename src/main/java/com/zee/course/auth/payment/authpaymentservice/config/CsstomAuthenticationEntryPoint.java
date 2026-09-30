@@ -1,6 +1,8 @@
 package com.zee.course.auth.payment.authpaymentservice.config;
 
 
+import com.zee.course.auth.payment.authpaymentservice.datatype.MessageType;
+import com.zee.course.auth.payment.authpaymentservice.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -39,11 +42,14 @@ public class CsstomAuthenticationEntryPoint  implements AuthenticationEntryPoint
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        response.getWriter().write("""
-            {
-              "error": "%s",
-              "message": "%s"
-            }
-            """.formatted(errorCode, message));
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+                .messageType(MessageType.ERROR)
+                .successful(false)
+                .errorCode(errorCode)
+                .errorMessage(message)
+                .build();
+
+        String jsonResponse = new ObjectMapper().writeValueAsString(apiResponse);
+        response.getWriter().write(jsonResponse);
     }
 }

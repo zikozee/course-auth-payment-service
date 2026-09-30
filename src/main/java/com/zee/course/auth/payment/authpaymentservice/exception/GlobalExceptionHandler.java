@@ -1,7 +1,9 @@
 package com.zee.course.auth.payment.authpaymentservice.exception;
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.zee.course.auth.payment.authpaymentservice.datatype.MessageType;
+import com.zee.course.auth.payment.authpaymentservice.datatype.PaymentFieldError;
+import com.zee.course.auth.payment.authpaymentservice.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,7 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<Response> onMethodArgumentNotValidException(MethodArgumentNotValidException ex){
+    ResponseEntity<ApiResponse<?>> onMethodArgumentNotValidException(MethodArgumentNotValidException ex){
 
         List<PaymentFieldError> fieldErrors = ex.getBindingResult().getFieldErrors()
                 .stream()
@@ -29,27 +31,27 @@ public class GlobalExceptionHandler {
                 .map(e -> new PaymentFieldError(e.getField(), e.getDefaultMessage(), e.getRejectedValue()))
                 .toList();
 
-        Response response = new Response("Invalid user input", fieldErrors);
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+                .messageType(MessageType.ERROR)
+                .successful(false)
+                .fieldErrors(fieldErrors)
+                .data("Invalid user input")
+                .build();
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
 
     @ExceptionHandler(PaymentServiceException.class)
-    public final ResponseEntity<Response> onAuthServiceException(PaymentServiceException ex) {
-        Response response = new Response(ex.getMessage(), null);
-        return new ResponseEntity<>(response, ex.getStatus());
+    public final ResponseEntity<ApiResponse<String>> onAuthServiceException(PaymentServiceException ex) {
+
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+                .messageType(MessageType.ERROR)
+                .successful(false)
+                .errorMessage(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(apiResponse, ex.getStatus());
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record Response(
-            String message,
-            List<PaymentFieldError> fieldErrors
-    ) {}
-
-    public record PaymentFieldError(
-            String field,
-            String message,
-            Object rejectedInput
-    ) { }
 }

@@ -1,6 +1,8 @@
 package com.zee.course.auth.payment.authpaymentservice.controller;
 
 
+import com.zee.course.auth.payment.authpaymentservice.datatype.MessageType;
+import com.zee.course.auth.payment.authpaymentservice.dto.ApiResponse;
 import com.zee.course.auth.payment.authpaymentservice.dto.CreatePaymentRequestDto;
 import com.zee.course.auth.payment.authpaymentservice.dto.CreatePaymentResponseDto;
 import com.zee.course.auth.payment.authpaymentservice.dto.StatusResponseDto;
@@ -30,20 +32,28 @@ public class PaymentController {
 
     @PreAuthorize(value = "hasAuthority('"+ Permission.INITIATE +"')")
     @PostMapping(path = "initiate", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreatePaymentResponseDto> initiatePayment(@Valid @RequestBody CreatePaymentRequestDto requestDto,
-                                                                    JwtAuthenticationToken token){
+    public ResponseEntity<ApiResponse<CreatePaymentResponseDto>> initiatePayment(@Valid @RequestBody CreatePaymentRequestDto requestDto,
+                                                       JwtAuthenticationToken token){
         return new ResponseEntity<>(
-                paymentService.initiatePayment(requestDto, token),
+                ApiResponse.<CreatePaymentResponseDto>builder()
+                        .successful(true)
+                        .messageType(MessageType.SUCCESS)
+                        .data(paymentService.initiatePayment(requestDto, token))
+                        .build(),
                 HttpStatus.OK
         );
     }
 
     @PreAuthorize(value = "hasAuthority('"+ Permission.STATUS +"')")
     @GetMapping(path = "status")
-    public ResponseEntity<StatusResponseDto> status(@RequestParam("transactionReference") String transactionReference,
+    public ResponseEntity<ApiResponse<StatusResponseDto>> status(@RequestParam("transactionReference") String transactionReference,
                                                     JwtAuthenticationToken token){
         return new ResponseEntity<>(
-                paymentService.getPaymentStatus(transactionReference, token),
+                ApiResponse.<StatusResponseDto>builder()
+                        .successful(true)
+                        .messageType(MessageType.SUCCESS)
+                        .data(paymentService.getPaymentStatus(transactionReference, token))
+                        .build(),
                 HttpStatus.OK
         );
     }
