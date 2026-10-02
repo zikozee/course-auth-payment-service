@@ -6,6 +6,7 @@ import com.zee.course.auth.payment.authpaymentservice.datatype.PaymentStatus;
 import com.zee.course.auth.payment.authpaymentservice.dto.CreatePaymentRequestDto;
 import com.zee.course.auth.payment.authpaymentservice.dto.CreatePaymentResponseDto;
 import com.zee.course.auth.payment.authpaymentservice.dto.StatusResponseDto;
+import com.zee.course.auth.payment.authpaymentservice.dto.UserTransactionResponse;
 import com.zee.course.auth.payment.authpaymentservice.entity.Payment;
 import com.zee.course.auth.payment.authpaymentservice.exception.PaymentServiceException;
 import com.zee.course.auth.payment.authpaymentservice.repository.PaymentRepository;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 
@@ -73,5 +76,23 @@ public class PaymentService {
                     HttpStatus.BAD_REQUEST);
 
         return new StatusResponseDto(transactionReference, payment.get().getStatus());
+    }
+
+    @Transactional(readOnly = true)
+    public UserTransactionResponse getUserTransactions(LocalDate startDate){
+
+        final Instant convertedDate = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        return new UserTransactionResponse(
+                paymentRepository.findByCreatedAtGreaterThan(convertedDate)
+                        .stream()
+                        .map(payment -> new UserTransactionResponse
+                                        .Transaction(
+                                        payment.getInitiator(),
+                                        payment.getCreatedAt()
+                                )
+                        )
+                        .toList()
+        );
     }
 }

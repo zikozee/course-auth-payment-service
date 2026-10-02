@@ -6,6 +6,7 @@ import com.zee.course.auth.payment.authpaymentservice.entity.Payment;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,6 @@ public interface PaymentRepository extends ListCrudRepository<Payment, Long> {
     boolean existsByTransactionReferenceAndInitiator(String transactionReference, String initiator);
 
     List<Payment> findByStatus(PaymentStatus paymentStatus);
+
+    List<Payment> findByCreatedAtGreaterThan(Instant date);
 }

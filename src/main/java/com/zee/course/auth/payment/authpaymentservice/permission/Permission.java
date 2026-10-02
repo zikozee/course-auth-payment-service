@@ -12,4 +12,5 @@ public class Permission {
 
     public static final String INITIATE = "INITIATE";
     public static final String STATUS = "STATUS";
+    public static final String SYSTEM_ACCESS = "SYSTEM_ACCESS";
 }
