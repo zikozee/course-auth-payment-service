@@ -28,7 +28,7 @@ security:
   jwt:
     # note 127.0.0.1 is not the same as local host for the issuer validation
     jwks-uri: ${JWKS_URI:http://127.0.0.1:8080/oauth2/jwks}
-    issuer: ${JWKS_URI:http://127.0.0.1:8080}
+    issuer: ${JWKS_ISSUER:http://127.0.0.1:8080}
 
 logging:
   level:
