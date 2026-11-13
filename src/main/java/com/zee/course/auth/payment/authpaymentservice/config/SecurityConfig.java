@@ -72,7 +72,7 @@ public class SecurityConfig {
 
 
 
-        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build(); // using withJwkSetUri makes the decoder lazy and doesn't contact the server at startup
         OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(issuer);
         AudienceValidator audienceValidator = new AudienceValidator("payment-service");
         jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator));
